@@ -1,0 +1,18 @@
+{
+  "name": "MailReadReceipt",
+  "version": "1.0.0",
+  "description": "This extension lets you see if your email was read by the receiver",
+  "manifest_version": 3,
+  "author": "Othersify",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "MailReadReceipt"
+  },
+  "content_scripts": [
+    {
+      "js": ["scripts/mail.js"],
+      "css": ["css/mail.css"],
+      "matches": ["https://mail.google.com/*"]
+    }
+  ]
+}
