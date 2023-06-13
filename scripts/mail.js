@@ -6,27 +6,7 @@ const subjectSelector = ".aoD.az6 input.aoT";
 const mailBoxClassName = "M9";
 const apiEndpoint = "http://localhost:3000/api/v1/mail";
 
-// This function Waits for element with given selector to come into existence
-function waitForElem(selector) {
-  return new Promise((resolve) => {
-    if (document.querySelector(selector)) {
-      return resolve(document.querySelector(selector));
-    }
-
-    const observer = new MutationObserver((mutations) => {
-      if (document.querySelector(selector)) {
-        resolve(document.querySelector(selector));
-        observer.disconnect();
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-  });
-}
-
+// Gets all the relevant elements from the mailbox
 function getElementsFromBox(mailBoxEl) {
   const iconsBarEl = mailBoxEl.querySelector(iconsBarSelector);
   const sendBtnEl = mailBoxEl.querySelector(sendButtonSelector);
@@ -43,6 +23,7 @@ function getElementsFromBox(mailBoxEl) {
   };
 }
 
+// Sends the email with tracking information
 function sendMailWithTracking({
   receipientsEls,
   subjectEl,
@@ -76,6 +57,7 @@ function sendMailWithTracking({
   sendBtnEl.click();
 }
 
+// Adds the passed in icon with passed in eventhandler into mailbox with
 function addIcon(iconsBarEl, onIconClick) {
   const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B56CE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-check"><path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="m16 19 2 2 4-4"/></svg>`;
 
@@ -99,8 +81,10 @@ function addIcon(iconsBarEl, onIconClick) {
 
 // This function should run on every new mail box that appears
 function runOnMailBox(mailBoxEl) {
+  // Get all relevant elemetns from mailbox
   const { iconsBarEl, sendBtnEl, composeAreaEl, receipientsEls, subjectEl } =
     getElementsFromBox(mailBoxEl);
+  // Add the icon into mailbox along with its functionality
   addIcon(iconsBarEl, () =>
     sendMailWithTracking({
       receipientsEls,
@@ -121,7 +105,7 @@ let observer = new MutationObserver((mutations) => {
     if (!mutation.addedNodes) return;
     let node = mutation.target;
     if (node.className && node.className === mailBoxClassName) {
-      // The node is the mail box
+      // The node is the mail box, run the mailbox function in order to add icon and its functionality
       runOnMailBox(node);
     }
 
@@ -136,6 +120,7 @@ observerConfig = {
   characterData: false,
 };
 
+// Observe the whole document for changes
 observer.observe(document.body, observerConfig);
 
 // stop watching using:
