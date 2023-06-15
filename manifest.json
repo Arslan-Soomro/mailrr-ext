@@ -8,10 +8,13 @@
     "default_popup": "index.html",
     "default_title": "MailReadReceipt"
   },
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [
     {
-      "js": ["scripts/mail.js"],
-      "css": ["css/mail.css"],
+      "js": ["scripts/mailrr.js"],
+      "css": ["css/mailrr.css"],
       "matches": ["https://mail.google.com/*"]
     }
   ]

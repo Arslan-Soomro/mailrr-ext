@@ -1,3 +1,6 @@
+
+
+/* ---- CONFIG ---- */
 const sendButtonSelector = ".T-I.J-J5-Ji.aoO.v7.T-I-atl.L3";
 const composeAreaSelector = ".Am.Al.editable.LW-avf.tS-tW";
 const iconsBarSelector = "tr.btC";
@@ -6,9 +9,20 @@ const subjectSelector = ".aoD.az6 input.aoT";
 const mailBoxClassName = "M9";
 const apiEndpoint = "http://localhost:4000/mailrr";
 
+// TODO Add Login, store token in local storage and retrieve it from there
+/* ---- STORAGE UTILITIES ---- */
+function setLocally(obj, callback) {
+  return chrome.storage.sync.set(obj, callback || (() => null));
+}
+
+function getLocally(keys, callback) {
+  return chrome.storage.sync.get(keys, callback || (() => null));
+}
+
+/* ---- UTILITIES ---- */
 async function fetchEmailId(emailData) {
   // get token from local storage
-  const token = "token here";
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNDFlNzg5NS0zMzFiLTRlZGItYjc0ZS05YWI0ZDZiNzQ4YzkiLCJpYXQiOjE2ODY4MjYzNjcsImV4cCI6MTY4Njk5OTE2N30.h1mCnybZL_R_RJuS23WNyxwebzmUqQ9wgQNFUJ_szjM";
 
   if (!token) {
     return {error: "please log in first"};
@@ -24,7 +38,7 @@ async function fetchEmailId(emailData) {
   });
 
   const data = await response.json();
-  return data.email_id;
+  return { email_id: data.email_id };
 }
 
 function getSenderEmail() {
@@ -79,7 +93,7 @@ async function sendMailWithTracking({
   if(response.error) return alert(response.error);
 
   const objToEncode = {
-    user_id: "user id here",
+    // user_id: "user id here", We don't need this for now
     email_id: email_id,
   };
 
@@ -136,6 +150,7 @@ function runOnMailBox(mailBoxEl) {
   );
 }
 
+/* ---- OBSERVER ---- */
 // Observer Function -> Main
 // mutations is an array that contains all the changes that occured at a time in DOM
 // every element in mutations array is a MutationRecord object that represents a change
