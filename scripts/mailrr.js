@@ -1,5 +1,3 @@
-
-
 /* ---- CONFIG ---- */
 const sendButtonSelector = ".T-I.J-J5-Ji.aoO.v7.T-I-atl.L3";
 const composeAreaSelector = ".Am.Al.editable.LW-avf.tS-tW";
@@ -8,6 +6,7 @@ const receipientsSelector = ".afW.WeJhwb .akl";
 const subjectSelector = ".aoD.az6 input.aoT";
 const mailBoxClassName = "M9";
 const apiEndpoint = "http://localhost:4000/mailrr";
+let authToken = null;
 
 // TODO Add Login, store token in local storage and retrieve it from there
 /* ---- STORAGE UTILITIES ---- */
@@ -19,26 +18,32 @@ function getLocally(keys, callback) {
   return chrome.storage.sync.get(keys, callback || (() => null));
 }
 
+getLocally(["token"], (data) => {
+  authToken = data.token;
+});
+
 /* ---- UTILITIES ---- */
 async function fetchEmailId(emailData) {
   // get token from local storage
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNDFlNzg5NS0zMzFiLTRlZGItYjc0ZS05YWI0ZDZiNzQ4YzkiLCJpYXQiOjE2ODY4MjYzNjcsImV4cCI6MTY4Njk5OTE2N30.h1mCnybZL_R_RJuS23WNyxwebzmUqQ9wgQNFUJ_szjM";
+  //const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNDFlNzg5NS0zMzFiLTRlZGItYjc0ZS05YWI0ZDZiNzQ4YzkiLCJpYXQiOjE2ODY4MjYzNjcsImV4cCI6MTY4Njk5OTE2N30.h1mCnybZL_R_RJuS23WNyxwebzmUqQ9wgQNFUJ_szjM";
+
+  const token = authToken;
 
   if (!token) {
-    return {error: "please log in first"};
+    return { error: "please log in first" };
   }
 
-  const response = await fetch(apiEndpoint, {
+  const response = await fetch(`${apiEndpoint}/savemail`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authentication: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(emailData),
   });
 
   const data = await response.json();
-  return { email_id: data.email_id };
+  return data;
 }
 
 function getSenderEmail() {
@@ -46,43 +51,39 @@ function getSenderEmail() {
   const senderEmail = title.split("-")[1].trim();
   return senderEmail;
 }
+/* --- DOM --- */
 // Gets all the relevant elements from the mailbox
 function getElementsFromBox(mailBoxEl) {
   const iconsBarEl = mailBoxEl.querySelector(iconsBarSelector);
   const sendBtnEl = mailBoxEl.querySelector(sendButtonSelector);
   const composeAreaEl = mailBoxEl.querySelector(composeAreaSelector);
-  const receipientsEls = mailBoxEl.querySelectorAll(receipientsSelector);
+  const recipientsEls = mailBoxEl.querySelectorAll(receipientsSelector);
   const subjectEl = mailBoxEl.querySelector(subjectSelector);
 
   return {
     iconsBarEl,
     sendBtnEl,
     composeAreaEl,
-    receipientsEls,
+    recipientsEls,
     subjectEl,
   };
 }
 
 // Sends the email with tracking information
-async function sendMailWithTracking({
-  receipientsEls,
-  subjectEl,
-  composeAreaEl,
-  sendBtnEl,
-}) {
+async function sendMailWithTracking(mailBoxEl) {
+  const { recipientsEls, subjectEl, composeAreaEl, sendBtnEl } =
+    getElementsFromBox(mailBoxEl);
   // Prepare data to send
-  let receipientsStr = Array.from(receipientsEls).map(
-    (el) => el.innerText + ","
-  );
+  let recipientsStr = Array.from(recipientsEls)
+    .map((el) => el.textContent)
+    .join(",");
   let subjectStr = subjectEl?.value;
   let timestamp = new Date().toISOString();
   let senderEmail = getSenderEmail();
 
-  // Get User Token
-
   // Prepare Email Data to send to server
   const emailData = {
-    recipient: receipientsStr,
+    recipient: recipientsStr,
     subject: subjectStr,
     date_sent: timestamp,
     sender_email: senderEmail,
@@ -90,11 +91,11 @@ async function sendMailWithTracking({
   // Send email data and token to server, add email id to email data
   const response = await fetchEmailId(emailData);
 
-  if(response.error) return alert(response.error);
+  if (response.error) return alert(response.error);
 
   const objToEncode = {
     // user_id: "user id here", We don't need this for now
-    email_id: email_id,
+    email_id: response.email_id,
   };
 
   // Encode data to base64
@@ -102,8 +103,10 @@ async function sendMailWithTracking({
 
   // Create img element
   const imgEl = document.createElement("img");
-  imgEl.setAttribute("src", `${apiEndpoint}?data=${base64Str}`);
   imgEl.setAttribute("style", "display: none;width:0;height:0;");
+  imgEl.setAttribute("src", `${apiEndpoint}/updatemail?data=${base64Str}`);
+
+  // console.log("BASE64 STRING: ", base64Str);
 
   // Add img element to compose area
   composeAreaEl.appendChild(imgEl);
@@ -137,17 +140,13 @@ function addIcon(iconsBarEl, onIconClick) {
 // This function should run on every new mail box that appears
 function runOnMailBox(mailBoxEl) {
   // Get all relevant elemetns from mailbox
-  const { iconsBarEl, sendBtnEl, composeAreaEl, receipientsEls, subjectEl } =
+  /*
+  const { iconsBarEl, sendBtnEl, composeAreaEl, recipientsEls, subjectEl } =
     getElementsFromBox(mailBoxEl);
+    */
+  const { iconsBarEl } = getElementsFromBox(mailBoxEl);
   // Add the icon into mailbox along with its functionality
-  addIcon(iconsBarEl, () =>
-    sendMailWithTracking({
-      receipientsEls,
-      subjectEl,
-      composeAreaEl,
-      sendBtnEl,
-    })
-  );
+  addIcon(iconsBarEl, () => sendMailWithTracking(mailBoxEl));
 }
 
 /* ---- OBSERVER ---- */
