@@ -102,14 +102,15 @@ async function sendMailWithTracking(mailBoxEl) {
   const base64Str = btoa(JSON.stringify(objToEncode));
 
   // Create img element
-  const imgEl = document.createElement("img");
-  imgEl.setAttribute("style", "display: none;width:0;height:0;");
-  imgEl.setAttribute("src", `${apiEndpoint}/updatemail?data=${base64Str}`);
+  const divEl = document.createElement("div");
+  divEl.setAttribute("style", "width:0;height:0;");
+  divEl.setAttribute("id", "mailrr");
+  divEl.innerHTML = `<img style="width:0;height:0;" src="${apiEndpoint}/updatemail?data=${base64Str}">`;
 
   // console.log("BASE64 STRING: ", base64Str);
 
   // Add img element to compose area
-  composeAreaEl.appendChild(imgEl);
+  composeAreaEl.appendChild(divEl);
 
   // Select send button and click it
   sendBtnEl.click();
