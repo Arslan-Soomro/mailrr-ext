@@ -6,11 +6,32 @@ const subjectSelector = ".aoD.az6 input.aoT";
 const mailBoxClassName = "M9";
 const apiEndpoint = "http://localhost:4000/mailrr";
 
-function getSenderEmail (){
+async function fetchEmailId(emailData) {
+  // get token from local storage
+  const token = "token here";
+
+  if (!token) {
+    return {error: "please log in first"};
+  }
+
+  const response = await fetch(apiEndpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authentication: `Bearer ${token}`,
+    },
+    body: JSON.stringify(emailData),
+  });
+
+  const data = await response.json();
+  return data.email_id;
+}
+
+function getSenderEmail() {
   const title = document.querySelector("head > title").innerText;
   const senderEmail = title.split("-")[1].trim();
   return senderEmail;
-};
+}
 // Gets all the relevant elements from the mailbox
 function getElementsFromBox(mailBoxEl) {
   const iconsBarEl = mailBoxEl.querySelector(iconsBarSelector);
@@ -29,7 +50,7 @@ function getElementsFromBox(mailBoxEl) {
 }
 
 // Sends the email with tracking information
-function sendMailWithTracking({
+async function sendMailWithTracking({
   receipientsEls,
   subjectEl,
   composeAreaEl,
@@ -44,21 +65,23 @@ function sendMailWithTracking({
   let senderEmail = getSenderEmail();
 
   // Get User Token
-  
+
   // Prepare Email Data to send to server
   const emailData = {
     recipient: receipientsStr,
     subject: subjectStr,
     date_sent: timestamp,
     sender_email: senderEmail,
-  }
+  };
   // Send email data and token to server, add email id to email data
-  
+  const response = await fetchEmailId(emailData);
+
+  if(response.error) return alert(response.error);
 
   const objToEncode = {
-    token: "token here",
-    email_id: "email id here",
-  }
+    user_id: "user id here",
+    email_id: email_id,
+  };
 
   // Encode data to base64
   const base64Str = btoa(JSON.stringify(objToEncode));
