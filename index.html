@@ -7,11 +7,35 @@
     <title>Email Read Receipt</title>
   </head>
   <body>
-    <form class="container">
-      <input placeholder="Email" class="text-input" />
-      <input placeholder="Password" class="text-input" />
-      <button type="submit" class="blue-btn">Login</button>
-    </form>
+    <div class="container">
+      <div class="header"><h3>Mail Read Receipt</h3></div>
+      <!-- Form Container -->
+      <div class="spinner" style="display: none"></div>
+      <form id="form-cont" class="form-container">
+        <p class="text-center">Login to get started!</p>
+        <input id="email" name="email" placeholder="Email" class="text-input" />
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="Password"
+          class="text-input"
+        />
+        <p class="danger-text" id="error"></p>
+        <button type="submit" class="blue-btn">Login</button>
+        <p class="muted-text">
+          Don't have an account?
+          <a href="https://othersify.com/signup">Sign up</a>
+        </p>
+      </form>
+      <!-- Logged In Screen -->
+      <div id="login-cont">
+        <p class="text-center">
+          You are all set 👍, and can use Mail Read Receipt. Get started by
+          writing an email and sending the email with tracking.
+        </p>
+      </div>
+    </div>
 
     <script src="./scripts/index.js"></script>
   </body>
