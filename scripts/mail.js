@@ -4,8 +4,13 @@ const iconsBarSelector = "tr.btC";
 const receipientsSelector = ".afW.WeJhwb .akl";
 const subjectSelector = ".aoD.az6 input.aoT";
 const mailBoxClassName = "M9";
-const apiEndpoint = "http://localhost:3000/api/v1/mail";
+const apiEndpoint = "http://localhost:4000/mailrr";
 
+function getSenderEmail (){
+  const title = document.querySelector("head > title").innerText;
+  const senderEmail = title.split("-")[1].trim();
+  return senderEmail;
+};
 // Gets all the relevant elements from the mailbox
 function getElementsFromBox(mailBoxEl) {
   const iconsBarEl = mailBoxEl.querySelector(iconsBarSelector);
@@ -36,14 +41,27 @@ function sendMailWithTracking({
   );
   let subjectStr = subjectEl?.value;
   let timestamp = new Date().toISOString();
+  let senderEmail = getSenderEmail();
 
-  // Encode Data
-  const objToEncode = {
-    receipents: receipientsStr,
+  // Get User Token
+  
+  // Prepare Email Data to send to server
+  const emailData = {
+    recipient: receipientsStr,
     subject: subjectStr,
-    timestamp: timestamp,
-  };
-  const base64Str = btoa(JSON.stringify(objToEncode)); // decode = JSON.parse(atob(encoded))
+    date_sent: timestamp,
+    sender_email: senderEmail,
+  }
+  // Send email data and token to server, add email id to email data
+  
+
+  const objToEncode = {
+    token: "token here",
+    email_id: "email id here",
+  }
+
+  // Encode data to base64
+  const base64Str = btoa(JSON.stringify(objToEncode));
 
   // Create img element
   const imgEl = document.createElement("img");
